@@ -1,100 +1,112 @@
 <?php 
+include dirname(__FILE__). '/../includes/header.php'; 
+include dirname(__FILE__).'/../../backend/db/connection.php';
 
-$title_page = "Blog | ";
-include dirname(__FILE__). '/../includes/header.php'; ?>
+$search_results = [];
+$search_term = '';
 
+// Exibição das postagens do blog
+try {
+    // Consulta ao banco de dados para buscar as postagens
+    $query = "SELECT id, title, content, author FROM news LIMIT 6"; 
+    $stmt = $pdo->query($query);
 
-<main class="main mb-0" data-animate="top" data-delay="3">
-<aside class="banner_topo bnr-blog"></aside>
-	 
-<header class="page-header" >
-	<div class="container">
-		<div class="row">
-			<div class="col-12">
-				<h1>
-					<span>Blog</span>
-				</h1>
-			</div>
-		</div>
-	</div>
-</header>
+    // Obtendo os resultados da consulta
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-<section class=" mb-0">
-	<div class="container">
-		
-		<div class="row">
+    // Verifica se há resultados
+    if (count($results) > 0) {
+        foreach ($results as $row) {
+            ?>
+            <div class="col-lg-4 mb-5">
+                <div class="blog_content box-shadow mb-3">
+                    <!-- Link para a página de detalhes da postagem -->
+                    <a href="blog/detalhe.php?id=<?php echo $row['id']; ?>" class="zoom_image mb-3">
+                    </a>
 
-			<div class="col-12 mb-4">
-				<form class="row">
-					<div class="col-lg-9 col-8">
-						<input class="form-control form-control-lg" style="border: 1px solid #98a8b1;padding: 11px;" type="text" placeholder="Buscar">
-					</div>
-					<div class="col-lg-3 col-4">
-						<button type="submit" class="btn btn-primary w-100">BUSCAR</button>
-					</div>
-				</form>
-			</div>
-		
-		<?php for ($i=1; $i <=9 ; $i++) { ?> 
-				
-			<div class="col-lg-4 mb-5">
-				<div class="blog_content box-shadow mb-3">
-					<a href="blog/detalhe" class="zoom_image mb-3">
-						<img src="assets/img/blog.jpg" alt="" />
-					</a>
+                    <div class="chamada_blog">
+                        <!-- Exibindo o título da postagem -->
+                        <h3 class="">
+                            <?php echo $row['title']; ?>
+                        </h3>
 
-					<div class="chamada_blog">
-						<h3 class="">
-							Primeiro Simpósio de Fonoaudiologia
-						</h3>
+                        <!-- Exibindo um resumo do conteúdo -->
+                        <p>
+                            <?php echo substr($row['content'], 0, 100) . '...'; // Exibe os primeiros 100 caracteres do conteúdo ?>
+                        </p>
 
-						<p>
-							O primeiro Simpósio de Fonoaudiologia foi incrível graças a cada um de vocês que esteve presente. Agradecemos por compartilharem conhecimento e entusiasmo. Juntos, construímos uma jornada inesquecível!
-						</p>
-					</div>
-				</div>
-				<a href="blog/detalhe" class="leia">Saiba mais</a>
-			</div><!-- col-lg-4 -->
+                        <!-- Exibindo o autor da postagem -->
+                        <p>
+                            <strong>Autor:</strong> <?php echo $row['author']; ?>
+                        </p>
+                    </div>
+                </div>
+                <!-- Link para ler mais -->
+                <a href="pages\blog\detalhe.php?id=<?php echo $row['id']; ?>" class="leia">Saiba mais</a>
+                <a href="/clinicmais/backend/news/edit_news.php?id=<?php echo $row['id']; ?>" class="editar">Editar</a>
+                <a href="/clinicmais/backend/news/delete_news.php?id=<?php echo $row['id']; ?>" class="excluir" onclick="return confirm('Tem certeza que deseja excluir esta notícia?');">Excluir</a>
+            </div>
+            <?php
+        }
+    } else {
+        echo "<p>Nenhuma postagem encontrada.</p>";
+    }
 
-		<?php } ?>
+} catch (PDOException $e) {
+    echo "<p>Erro ao buscar postagens: " . $e->getMessage() . "</p>";
+}
 
- 			<div class="col-12 my-3">
-
- 				<nav aria-label="Paginação">
-				  <ul class="pagination justify-content-center">
-				    <li class="page-item ">
-				      <a class="page-link" href="javascript:;" tabindex="-1">Anterior</a>
-				    </li>
-				    <li class="page-item active"><a class="page-link" href="javascript:;">1</a></li>
-				    <li class="page-item"><a class="page-link" href="javascript:;">2</a></li>
-				    <li class="page-item"><a class="page-link" href="javascript:;">3</a></li>
-				    <li class="page-item">
-				      <a class="page-link" href="javascript:;">Próximo</a>
-				    </li>
-				  </ul>
-				</nav>
-
- 			</div>
-
-		</div><!-- row -->
-
-	</div> <!-- container -->
-</section>
-
-<aside>
-<?php
-	$banner = rand(1,6);
+// Seção para adicionar nova notícia
 ?>
-	<a href="<?=$config['whatsapp'];?>" target="_blank">
-		<img src="assets/img/banner/0<?=$banner;?>.png" class="d-none d-md-block w-100">
-		<img src="assets/img/banner/mobile0<?=$banner;?>.jpg" class="d-block d-md-none w-100">
-	</a>
-</aside>
-</main>
 
+<form action="/clinicmais/backend/news/insert_news.php" method="POST">
+    <label for="title">Título:</label>
+    <input type="text" id="title" name="title" required><br><br>
+    
+    <label for="author">Autor:</label>
+    <input type="text" id="author" name="author" required><br><br>
+    
+    <label for="content">Conteúdo:</label><br>
+    <textarea id="content" name="content" rows="10" cols="50" required></textarea><br><br>
+
+    <button type="submit">Adicionar Notícia</button>
+</form>
+
+<!-- Formulário de Busca -->
+<form action="/clinicmais/backend/news/search_news.php" method="GET" style="margin-bottom: 20px;">
+    <input type="text" name="search" placeholder="Buscar notícias..." value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>" required>
+    <button type="submit">Buscar</button>
+</form>
+
+<!-- Exibição dos resultados da busca ou das notícias padrão -->
+<?php
+if (count($search_results) > 0) {
+    foreach ($search_results as $row) {
+        ?>
+        <div class="col-lg-4 mb-5">
+            <div class="blog_content box-shadow mb-3">
+                <a href="blog/detalhe.php?id=<?php echo $row['id']; ?>" class="zoom_image mb-3"></a>
+                <div class="chamada_blog">
+                    <h3><?php echo $row['title']; ?></h3>
+                    <p><?php echo substr($row['content'], 0, 100) . '...'; ?></p>
+                    <p><strong>Autor:</strong> <?php echo $row['author']; ?></p>
+                </div>
+            </div>
+            <a href="pages/blog/detalhe.php?id=<?php echo $row['id']; ?>" class="leia">Saiba mais</a>
+            <a href="/clinicmais/backend/news/edit_news.php?id=<?php echo $row['id']; ?>" class="editar">Editar</a>
+            <a href="/clinicmais/backend/news/delete_news.php?id=<?php echo $row['id']; ?>" class="excluir" onclick="return confirm('Tem certeza que deseja excluir esta notícia?');">Excluir</a>
+        </div>
+        <?php
+    }
+} else {
+    if (isset($_GET['search'])) {
+        echo "<p>Nenhum resultado encontrado para: " . htmlspecialchars($_GET['search']) . "</p>";
+    } else {
+        echo "<p>Nenhuma postagem encontrada.</p>";
+    }
+}
+?>
 
 <?php 
-
-include dirname(__FILE__). '/../includes/footer.php';
-
+include dirname(__FILE__). '/../includes/footer.php'; 
 ?>

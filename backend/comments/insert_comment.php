@@ -1,27 +1,32 @@
 <?php
-include '../db/connection.php';  // Inclui a conexão com o banco
+include '../db/connection.php'; // Conexão com o banco de dados
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $texto = $_POST['texto'];
-    $noticia_id = $_POST['news_id'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Verifica se todos os campos foram preenchidos
+    if (isset($_POST['news_id'], $_POST['author'], $_POST['content']) && !empty($_POST['news_id']) && !empty($_POST['author']) && !empty($_POST['content'])) {
+        $news_id = $_POST['news_id'];
+        $author = $_POST['author'];
+        $content = $_POST['content'];
 
-    // Se o nome for opcional, preenche com 'Anônimo' se estiver vazio
-    $nome = 'Anônimo'; 
+        try {
+            // Insere o comentário na tabela
+            $sql = "INSERT INTO comments (news_id, author, content, created_at) VALUES (:news_id, :author, :content, NOW())";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(':news_id', $news_id, PDO::PARAM_INT);
+            $stmt->bindParam(':author', $author);
+            $stmt->bindParam(':content', $content);
+            $stmt->execute();
 
-    if (!empty($texto) && !empty($noticia_id)) {
-        $sql = "INSERT INTO comments (nome, texto, news_id) VALUES (:nome, :texto, :noticia_id)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':nome', $nome);
-        $stmt->bindParam(':texto', $texto);
-        $stmt->bindParam(':noticia_id', $noticia_id);
-
-        if ($stmt->execute()) {
-            header("Location: ../pages/detalhe.php?id=$noticia_id");
+            // Redireciona de volta para a página da notícia com os comentários
+            header("Location: /clinicmais/pages/blog/detalhe.php?id=$news_id");
             exit;
-        } else {
-            echo "Erro ao inserir o comentário.";
+        } catch (PDOException $e) {
+            echo "Erro ao inserir comentário: " . $e->getMessage();
         }
+    } else {
+        echo "Todos os campos são obrigatórios.";
     }
+} else {
+    echo "Método inválido.";
 }
-
 ?>

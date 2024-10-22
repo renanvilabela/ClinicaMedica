@@ -1,12 +1,20 @@
 <?php
 include '../db/connection.php';  // Inclui a conexão ao banco
 
-// Critério de busca
-$termo_de_busca = '%exemplo%';  // Este valor pode ser dinâmico (por exemplo, vindo de um formulário de pesquisa)
+include dirname(__FILE__) . '/../../pages/includes/header.php'; 
+
+
+// Verifica se o termo de busca foi enviado via GET
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $termo_de_busca = '%' . $_GET['search'] . '%';  // Sanitiza o termo de busca
+} else {
+    echo "Nenhum termo de busca foi fornecido.";
+    exit;
+}
 
 try {
-    // Prepara a query SQL de busca (SELECT) com um critério de busca no título
-    $sql = "SELECT * FROM news WHERE title LIKE :termo OR content LIKE :termo";
+    // Prepara a query SQL de busca (SELECT) com o critério de busca no título ou conteúdo
+    $sql = "SELECT * FROM news WHERE title LIKE :termo OR content LIKE :termo OR author LIKE :termo";
     $stmt = $pdo->prepare($sql);
 
     // Vincula o parâmetro da query com o valor de busca
@@ -30,4 +38,5 @@ try {
 } catch (PDOException $e) {
     echo "Erro ao buscar notícia: " . $e->getMessage();
 }
+include dirname(__FILE__) . '/../../pages/includes/footer.php';
 ?>

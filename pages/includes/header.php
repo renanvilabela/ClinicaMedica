@@ -1,7 +1,10 @@
 <?php
 session_start();
 include dirname(__FILE__). '/../../vars.php';
-//include dirname(__FILE__). '/../../helpers.php';
+include dirname(__FILE__). '/../../helpers.php';
+// var_dump(dirname(__FILE__). '/../../vars.php').exit();
+$menuativo = basename($_SERVER['PHP_SELF']); // Obtém o nome do arquivo atual
+
 
 ?>
 <!DOCTYPE html>
@@ -9,13 +12,15 @@ include dirname(__FILE__). '/../../vars.php';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<?php
-   echo "<base href=\"https://www.praticainternet.com.br/clinicmais/\"  />";
-  $menuativo = basename($_SERVER['SCRIPT_NAME']);
-  $titulo = "Clinic+";
+  <?php
+if ($_SERVER['SERVER_NAME'] == 'localhost') {
+    echo "<base href=\"http://localhost/clinicmais/\" />";
+} else {
+    echo "<base href=\"https://www.praticainternet.com.br/clinicmais/\" />";
+}
 ?>
    
-<title><?php echo $title_page; echo $titulo ?></title>
+   <title><?php echo isset($title_page) ? $title_page : 'ClinicMais'; ?></title>
   
 <!-- SEO -->
 <link rel="canonical" href="<?php echo $url_current;?>" />
