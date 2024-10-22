@@ -19,6 +19,7 @@ Configuração do banco de dados:
 
 Crie um banco de dados MySQL.
 Importe o seguinte script SQL para criar as tabelas de notícias e comentários:
+
 create database clinica_news;
 use clinica_news;
 
